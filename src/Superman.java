@@ -26,7 +26,7 @@ public class Superman {
      */
     public static void main(String[] args) throws IOException {
         try {
-            FileInputStream is = new FileInputStream(new File("superman-input16.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/superman-input16.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
