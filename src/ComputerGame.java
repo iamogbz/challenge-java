@@ -22,11 +22,9 @@ import java.util.logging.Logger;
 public class ComputerGame {
 
     final private static Logger logger = Logger.getLogger("ComputerGame");
-    // mapping of primes to numbers in the list
-    final private static Map<Integer, List<FactoredInteger>> factored1 = new HashMap<>();
-    final private static Map<Integer, List<FactoredInteger>> factored2 = new HashMap<>();
-    // store result of prime factor for possible faster query
-    final private static Map<Integer, Set<Integer>> primed = new HashMap<>();
+    // list of factored numbers
+    final private static List<FactoredInteger> factored1 = new LinkedList<>();
+    final private static List<FactoredInteger> factored2 = new LinkedList<>();
 
     public static void main(String args[]) throws IOException {
         try {
@@ -44,89 +42,30 @@ public class ComputerGame {
         String[] n2 = in.readLine().split("\\s");
         logger.log(Level.INFO, "{0}ms for handling input", (System.currentTimeMillis() - start));
         start = System.currentTimeMillis();
-        Integer num;
+        Integer num1, num2;
+        Set<Integer> primeFactors1, primeFactors2;
         for (int i = 0; i < n; i++) {
-            num = Integer.parseInt(n1[i]);
+            num1 = Integer.parseInt(n1[i]);
             //num = ThreadLocalRandom.current().nextInt(800000000, 1000000000);
-            Set<Integer> primeFactors = primeFactors(num);
-            for (Integer f : primeFactors) {
-                if (!factored1.containsKey(f))
-                    factored1.put(f, new LinkedList<>());
-                factored1.get(f).add(new FactoredInteger(num, primeFactors));
-            }
-        }
-        logger.log(Level.INFO, "{0}ms for processing primes 1", (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
-        for (int i = 0; i < n; i++) {
-            num = Integer.parseInt(n2[i]);
+            factored1.add(new FactoredInteger(num1, primeFactors(num1)));
+            num2 = Integer.parseInt(n2[i]);
             //num = ThreadLocalRandom.current().nextInt(800000000, 1000000000);
-            Set<Integer> primeFactors = primeFactors(num);
-            for (Integer f : primeFactors) {
-                if (!factored2.containsKey(f))
-                    factored2.put(f, new LinkedList<>());
-                factored2.get(f).add(new FactoredInteger(num, primeFactors));
-            }
+            factored2.add(new FactoredInteger(num2, primeFactors(num2)));
         }
-        logger.log(Level.INFO, "{0}ms for processing primes 2", (System.currentTimeMillis() - start));
+        logger.log(Level.INFO, "{0}ms for factoring primes", (System.currentTimeMillis() - start));
         start = System.currentTimeMillis();
-        List<Integer> k1 = new ArrayList<>(factored1.keySet());
-        Comparator<Integer> factored1Comparator = (Integer o1, Integer o2) -> {
-            List<FactoredInteger> f1 = factored1.get(o1);
-            List<FactoredInteger> f2 = factored1.get(o2);
-            int c = factoredScore(f1) - factoredScore(f2);
-            return c;
-        };
-        k1.sort(factored1Comparator);
-        System.out.println("starting order: " + k1);
-        logger.log(Level.INFO, "{0}ms for sorting factors 1", (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
-        int removals = 0;
-        FactoredInteger f1, f2;
-        List<FactoredInteger> factored1k, factored2k;
-        for (int ki = 0; ki < k1.size(); ki++) {
-            Integer k = k1.get(ki);
-            //for (Integer k : k1) {
-            if (factored2.containsKey(k)) {
-                // factored1k, factored2k;
-                factored1k = factored1.get(k);
-                factored2k = factored2.get(k);
-                // order both lists;
-                Collections.sort(factored1k);
-                Collections.sort(factored2k);
-                // using length of smaller list;
-                int shorter = Math.min(factored1k.size(), factored2k.size());
-                // remove from factor1 and factor2 the first numbers respectively;
-                for (int i = 0; i < shorter; i++) {
-                    f1 = factored1k.get(0);
-                    //System.out.println("removing1: " + f1);
-                    for (Integer f : f1.factors)
-                        if (!Objects.equals(f, k))
-                            factored1.get(f).remove(f1);
-                    factored1k.remove(0);
-                    f2 = factored2k.get(0);
-                    //System.out.println("removing2: " + f2);
-                    for (Integer f : f2.factors)
-                        if (!Objects.equals(f, k))
-                            factored2.get(f).remove(f2);
-                    factored2k.remove(0);
-                }
-                // add length of smaller list to result;
-                removals += shorter;
-                // resort after each removal?
-//                if (shorter > 0) {
-//                    k1.sort(factored1Comparator);
-//                    ki = 0;
-//                    //System.out.println("removed: " + shorter);
-//                    //System.out.println("new order: " + k1);
-//                }
+        boolean[][] bpGraph = new boolean[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
+                HashSet<Integer> factors = new HashSet<>(factored1.get(i).factors);
+                factors.retainAll(factored2.get(j).factors);
+                bpGraph[i][j] = !factors.isEmpty();
             }
-        }
-        logger.log(Level.INFO, "{0}ms for processing removals", (System.currentTimeMillis() - start));
-        System.out.flush();
-        System.out.println(factored1);
-        System.out.println(factored2);
-        System.out.println();
-        System.out.println(removals);
+        logger.log(Level.INFO, "{0}ms for building graph", (System.currentTimeMillis() - start));
+        start = System.currentTimeMillis();
+        int result = maxBPM(bpGraph, n);
+        logger.log(Level.INFO, "{0}ms for calculating bpm", (System.currentTimeMillis() - start));
+        System.out.println(result);
     }
 
     // TODO OPTIMIZE THIS - CACHE RESULTS;
@@ -153,13 +92,56 @@ public class ComputerGame {
         return primes;
     }
 
-    private static int factoredScore(List<FactoredInteger> factored) {
-        int score = 0;
-        for (FactoredInteger fi : factored) {
-            int s = fi.factors.size();
-            score = score > s ? score : s;
+    // A DFS based recursive function that returns true if a
+    // matching for vertex u is possible
+    private static boolean bpm(boolean bpGraph[][], int u, boolean seen[],
+            int matchR[], int n) {
+        // Try every job one by one
+        for (int v = 0; v < n; v++)
+            // If applicant u is interested in job v and v
+            // is not visited
+            if (bpGraph[u][v] && !seen[v]) {
+                seen[v] = true; // Mark v as visited
+
+                // If job 'v' is not assigned to an applicant OR
+                // previously assigned applicant for job v (which
+                // is matchR[v]) has an alternate job available.
+                // Since v is marked as visited in the above line,
+                // matchR[v] in the following recursive call will
+                // not get job 'v' again
+                if (matchR[v] < 0 || bpm(bpGraph, matchR[v],
+                        seen, matchR, n)) {
+                    matchR[v] = u;
+                    return true;
+                }
+            }
+        return false;
+    }
+
+    // Returns maximum number of matching from M to N
+    private static int maxBPM(boolean bpGraph[][], int n) {
+        // An array to keep track of the applicants assigned to
+        // jobs. The value of matchR[i] is the applicant number
+        // assigned to job i, the value -1 indicates nobody is
+        // assigned.
+        int matchR[] = new int[n];
+
+        // Initially all jobs are available
+        for (int i = 0; i < n; ++i)
+            matchR[i] = -1;
+
+        int result = 0; // Count of jobs assigned to applicants
+        for (int u = 0; u < n; u++) {
+            // Mark all jobs as not seen for next applicant.
+            boolean seen[] = new boolean[n];
+            for (int i = 0; i < n; ++i)
+                seen[i] = false;
+
+            // Find if the applicant 'u' can get a job
+            if (bpm(bpGraph, u, seen, matchR, n))
+                result++;
         }
-        return score;
+        return result;
     }
 
     private static class FactoredInteger implements Comparable {
