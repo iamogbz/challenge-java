@@ -19,7 +19,7 @@ public class ComputerGame {
     final private static Logger logger = Logger.getLogger("ComputerGame");
     final private static DebugTimer timer = new DebugTimer();
     private static BufferedReader in;
-    private static int n, num, pi, vn, source, dest, result;
+    private static Integer n, num, pi, vn, source, dest, result;
     private static String[] n1, n2;
     private static List<Integer> nodes1, nodes2;
     private static Map<Integer, Integer> primeNodes;
@@ -41,20 +41,19 @@ public class ComputerGame {
         n2 = in.readLine().split("\\s");
         timer.lap("reading input");
 
-        source = 0;
+        source = 0; dest = 1;
         primeNodes = new HashMap<>();
         nodes1 = new ArrayList<>();
         nodes2 = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            vn = i + 1;
+            vn = i + 2;
             nodes1.add(source);
             nodes2.add(vn);
             num = Integer.parseInt(n1[i]);
             primeFactors(num).stream().map((p) -> {
-                if (primeNodes.containsKey(p))
-                    pi = primeNodes.get(p);
-                else {
-                    pi = n * 2 + primeNodes.size();
+                pi = primeNodes.get(p);
+                if(pi == null) {
+                    pi = n * 2 + primeNodes.size() + 1;
                     primeNodes.put(p, pi);
                 }
                 return p;
@@ -64,13 +63,14 @@ public class ComputerGame {
             }).forEach((_item) -> {
                 nodes2.add(pi);
             });
-            vn = n + i + 1;
+            vn = n + i + 2;
+            nodes1.add(vn);
+            nodes2.add(dest);
             num = Integer.parseInt(n2[i]);
             primeFactors(num).stream().map((p) -> {
-                if (primeNodes.containsKey(p))
-                    pi = primeNodes.get(p);
-                else {
-                    pi = n * 2 + primeNodes.size();
+                pi = primeNodes.get(p);
+                if(pi == null) {
+                    pi = n * 2 + primeNodes.size() + 1;
                     primeNodes.put(p, pi);
                 }
                 return p;
@@ -81,15 +81,9 @@ public class ComputerGame {
                 nodes2.add(vn);
             });
         }
-        dest = n * 2 + primeNodes.size() + 1;
-        for (int i = 0; i < n; i++) {
-            vn = n + i + 1;
-            nodes1.add(vn);
-            nodes2.add(dest);
-        }
         timer.lap("factoring adjacency map");
 
-        List<Dinic.Edge>[] graph = Dinic.createGraph(dest + 1);
+        List<Dinic.Edge>[] graph = Dinic.createGraph(n * 2 + primeNodes.size() + 2);
         for (int i = 0; i < nodes1.size(); i++)
             Dinic.addEdge(graph, nodes1.get(i), nodes2.get(i), 1);
         timer.lap("building graph");
