@@ -27,10 +27,11 @@ public class ComputerGame {
     public static void main(String args[]) throws IOException {
         try {
             // sample result - 1867
-            FileInputStream is = new FileInputStream(new File("inputs/computer-game-09.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/computer-game-9.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
+            return;
         }
         timer.start();
 
@@ -104,19 +105,20 @@ public class ComputerGame {
     // TODO OPTIMIZE THIS - CACHE RESULTS?
     private static Set<Integer> primeFactors(int n) {
         final Set<Integer> primes = new HashSet<>();
-        // Print the number of 2s that divide n
+        // While 2 divides n, add 2 and divide n
         while (n % 2 == 0) {
             primes.add(2);
             n /= 2;
         }
         // n must be odd at this point.  So we can
         // skip one element (Note i = i +2)
-        for (int i = 3; i <= Math.sqrt(n); i += 2)
-            // While i divides n, print i and divide n
+        for (int i = 3; i <= Math.sqrt(n); i += 2) {
+            // While i divides n, save i and divide n
             while (n % i == 0) {
                 primes.add(i);
                 n /= i;
             }
+        }
 
         // This condition is to handle the case when
         // n is a prime number greater than 2
