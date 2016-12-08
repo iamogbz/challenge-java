@@ -18,11 +18,13 @@ public class Superman {
     private static int[][] grid;
     private static LinkedList<Integer[]> scoreMem;
     private static int bestJumpScore, bestJumpScoreBuilding, nextBestJumpScore;
-    private static int jumpHeight, numFloors, numBuildings;
-    private static Logger logger = Logger.getLogger("Superman");
+    private static int maxScore, jumpHeight, numFloors, numBuildings;
+    private static final Logger logger = Logger.getLogger("Superman");
+    private static final DebugTimer timer = new DebugTimer();
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
         try {
@@ -31,7 +33,7 @@ public class Superman {
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-        long start = System.currentTimeMillis();
+        timer.start();
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String[] s = in.readLine().split("\\s");
         numBuildings = Integer.parseInt(s[0]); // number of buildings
@@ -46,18 +48,15 @@ public class Superman {
                 grid[i][floor] += 1;
             }
         }
-        logger.log(Level.INFO, "{0}ms for input processing", (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
+        timer.lap("input processing");
         Integer[] scores = calculateScores();
-        long diff = System.currentTimeMillis() - start;
-        logger.log(Level.INFO, "{0}ms for routing ({1}ms floor avg)",
-                new Object[]{diff, diff / numFloors});
-        start = System.currentTimeMillis();
-        int max = 0;
+        timer.lap("for routing (" + numFloors + ")");
+        maxScore = 0;
         for (Integer score : scores)
-            max = score > max ? score : max;
-        System.out.println(max); // test input16 expected - 3610000
-        logger.log(Level.INFO, "{0}ms for getting route", (System.currentTimeMillis() - start));
+            maxScore = score > maxScore ? score : maxScore;
+        timer.stop("getting max");
+        System.out.println(maxScore); // test input16 expected - 3610000
+        logger.log(Level.INFO, timer.toString());
     }
 
     // calculate scores from bottom up filling up score memory as well

@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,10 @@ public class DebugTimer {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(running ? "Running" : "Total");
-        sb.append(" time: ").append(stopTime - startTime).append("ms\n").append(laps);
+        sb.append(" time: ").append(stopTime - startTime).append("ms\n");
+        laps.stream().forEach((l) -> {
+            sb.append(l).append("\n");
+        });
         return sb.toString();
     }
 
@@ -56,9 +60,10 @@ public class DebugTimer {
         stopTime = lap(name);
         running = false;
     }
-    
+
     /**
      * Get string representation of last lap
+     *
      * @return the last lap ran as a string
      */
     public Lap lastLap() {
