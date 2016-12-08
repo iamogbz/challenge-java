@@ -5,105 +5,124 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ComputerGame {
 
     final private static Logger logger = Logger.getLogger("ComputerGame");
+    final private static DebugTimer timer = new DebugTimer();
+    private static BufferedReader in;
+    private static int n, num, pi, vn, source, dest, result;
+    private static String[] n1, n2;
+    private static List<Integer> nodes1, nodes2;
+    private static Map<Integer, Integer> primeNodes;
 
     public static void main(String args[]) throws IOException {
         try {
             // sample result - 1867
-            FileInputStream is = new FileInputStream(new File("inputs/computer-game.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/computer-game-09.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-        long start = System.currentTimeMillis();
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        int n = Integer.parseInt(in.readLine());
-        //int n = 100000;
-        String[] n1 = in.readLine().split("\\s");
-        String[] n2 = in.readLine().split("\\s");
-        int[] lineA = new int[n], lineB = new int[n];
+        timer.start();
+
+        in = new BufferedReader(new InputStreamReader(System.in));
+        n = Integer.parseInt(in.readLine());
+        n1 = in.readLine().split("\\s");
+        n2 = in.readLine().split("\\s");
+        timer.lap("reading input");
+
+        source = 0;
+        primeNodes = new HashMap<>();
+        nodes1 = new ArrayList<>();
+        nodes2 = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            lineA[i] = Integer.parseInt(n1[i]);
-            //num = ThreadLocalRandom.current().nextInt(800000000, 1000000000);
-            lineB[i] = Integer.parseInt(n2[i]);
-            //num = ThreadLocalRandom.current().nextInt(800000000, 1000000000);
+            vn = i + 1;
+            nodes1.add(source);
+            nodes2.add(vn);
+            num = Integer.parseInt(n1[i]);
+            primeFactors(num).stream().map((p) -> {
+                if (primeNodes.containsKey(p))
+                    pi = primeNodes.get(p);
+                else {
+                    pi = n * 2 + primeNodes.size();
+                    primeNodes.put(p, pi);
+                }
+                return p;
+            }).map((_item) -> {
+                nodes1.add(vn);
+                return _item;
+            }).forEach((_item) -> {
+                nodes2.add(pi);
+            });
+            vn = n + i + 1;
+            num = Integer.parseInt(n2[i]);
+            primeFactors(num).stream().map((p) -> {
+                if (primeNodes.containsKey(p))
+                    pi = primeNodes.get(p);
+                else {
+                    pi = n * 2 + primeNodes.size();
+                    primeNodes.put(p, pi);
+                }
+                return p;
+            }).map((_item) -> {
+                nodes1.add(pi);
+                return _item;
+            }).forEach((_item) -> {
+                nodes2.add(vn);
+            });
         }
-        logger.log(Level.INFO, "{0}ms for handling input", (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
-        boolean[][] bpGraph = new boolean[n][n];
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                bpGraph[i][j] = !coprime(lineA[i], lineB[j]);
-        logger.log(Level.INFO, "{0}ms for building graph", (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
-        int result = maxBPM(bpGraph, n);
-        logger.log(Level.INFO, "{0}ms for calculating bpm", (System.currentTimeMillis() - start));
+        dest = n * 2 + primeNodes.size() + 1;
+        for (int i = 0; i < n; i++) {
+            vn = n + i + 1;
+            nodes1.add(vn);
+            nodes2.add(dest);
+        }
+        timer.lap("factoring adjacency map");
+
+        List<Dinic.Edge>[] graph = Dinic.createGraph(dest + 1);
+        for (int i = 0; i < nodes1.size(); i++)
+            Dinic.addEdge(graph, nodes1.get(i), nodes2.get(i), 1);
+        timer.lap("building graph");
+
+        result = Dinic.maxFlow(graph, source, dest);
+        timer.stop("solving max flow");
+
         System.out.println(result);
+        System.out.println();
+        System.out.println(timer);
     }
 
     // TODO OPTIMIZE THIS - CACHE RESULTS?
-    private static boolean coprime(int a, int b) {
-        int t;
-        while (b != 0) {
-            t = a;
-            a = b;
-            b = t % b;
+    private static Set<Integer> primeFactors(int n) {
+        final Set<Integer> primes = new HashSet<>();
+        // Print the number of 2s that divide n
+        while (n % 2 == 0) {
+            primes.add(2);
+            n /= 2;
         }
-        return a == 1; // gcd == 1 = coprime
-    }
-
-    // Returns maximum number of matching from M to N
-    private static int maxBPM(boolean bpGraph[][], int n) {
-        // An array to keep track of the applicants assigned to
-        // jobs. The value of matches[i] is the applicant number
-        // assigned to job i, the value -1 indicates nobody is
-        // assigned.
-        int matches[] = new int[n];
-
-        // Initially all jobs are available
-        for (int i = 0; i < n; ++i)
-            matches[i] = -1;
-
-        int result = 0; // Count of jobs assigned to applicants
-        for (int u = 0; u < n; u++) {
-            // Mark all jobs as not seen for next applicant.
-            boolean seen[] = new boolean[n];
-            for (int i = 0; i < n; ++i)
-                seen[i] = false;
-
-            // Find if the applicant 'u' can get a job
-            if (bpm(bpGraph, u, seen, matches, n))
-                result++;
-        }
-        return result;
-    }
-
-    // A DFS based recursive function that returns true if a
-    // matching for vertex u is possible
-    private static boolean bpm(boolean bpGraph[][], int u, boolean seen[],
-            int matches[], int n) {
-        // Try every item one by one
-        for (int v = 0; v < n; v++)
-            // If u is not coprime of v and v is not visited
-            if (bpGraph[u][v] && !seen[v]) {
-                seen[v] = true; // mark v as visited
-
-                // If item 'v' is not matched to any item 'u' OR previously 
-                // assigned match for v (which is matches[v]) has an alternate 
-                // job available. Since v is marked as visited in the above line
-                // matches[v] the recursive call below will not check v again
-                if (matches[v] < 0 || bpm(bpGraph, matches[v], seen, 
-                        matches, n)) {
-                    matches[v] = u;
-                    return true;
-                }
+        // n must be odd at this point.  So we can
+        // skip one element (Note i = i +2)
+        for (int i = 3; i <= Math.sqrt(n); i += 2)
+            // While i divides n, print i and divide n
+            while (n % i == 0) {
+                primes.add(i);
+                n /= i;
             }
-        return false;
+
+        // This condition is to handle the case when
+        // n is a prime number greater than 2
+        if (n > 2)
+            primes.add(n);
+        return primes;
     }
 
 }
