@@ -27,7 +27,7 @@ public class ComputerGame {
     public static void main(String args[]) throws IOException {
         try {
             // sample result - 1867
-            FileInputStream is = new FileInputStream(new File("inputs/computer-game-9.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/computer-game-09.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -98,8 +98,7 @@ public class ComputerGame {
         timer.stop("solving max flow");
 
         System.out.println(result);
-        System.out.println();
-        System.out.println(timer);
+        logger.log(Level.INFO, timer.toString());
     }
 
     // TODO OPTIMIZE THIS - CACHE RESULTS?
