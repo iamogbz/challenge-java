@@ -41,7 +41,8 @@ public class ComputerGame {
         n2 = in.readLine().split("\\s");
         timer.lap("reading input");
 
-        source = 0; dest = 1;
+        source = 0;
+        dest = 1;
         primeNodes = new HashMap<>();
         nodes1 = new ArrayList<>();
         nodes2 = new ArrayList<>();
@@ -52,7 +53,7 @@ public class ComputerGame {
             num = Integer.parseInt(n1[i]);
             primeFactors(num).stream().map((p) -> {
                 pi = primeNodes.get(p);
-                if(pi == null) {
+                if (pi == null) {
                     pi = n * 2 + primeNodes.size() + 1;
                     primeNodes.put(p, pi);
                 }
@@ -63,18 +64,16 @@ public class ComputerGame {
             }).forEach((_item) -> {
                 nodes2.add(pi);
             });
+        }
+        for (int i = 0; i < n; i++) {
             vn = n + i + 2;
             nodes1.add(vn);
             nodes2.add(dest);
             num = Integer.parseInt(n2[i]);
             primeFactors(num).stream().map((p) -> {
                 pi = primeNodes.get(p);
-                if(pi == null) {
-                    pi = n * 2 + primeNodes.size() + 1;
-                    primeNodes.put(p, pi);
-                }
                 return p;
-            }).map((_item) -> {
+            }).filter((_item) -> (pi != null)).map((_item) -> {
                 nodes1.add(pi);
                 return _item;
             }).forEach((_item) -> {
@@ -105,13 +104,12 @@ public class ComputerGame {
         }
         // n must be odd at this point.  So we can
         // skip one element (Note i = i +2)
-        for (int i = 3; i <= Math.sqrt(n); i += 2) {
+        for (int i = 3; i <= Math.sqrt(n); i += 2)
             // While i divides n, save i and divide n
             while (n % i == 0) {
                 primes.add(i);
                 n /= i;
             }
-        }
 
         // This condition is to handle the case when
         // n is a prime number greater than 2
