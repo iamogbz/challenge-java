@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +22,7 @@ public class ComputerGame {
     private static BufferedReader in;
     private static Integer n, pi, vn, source, dest, result;
     private static Map<Integer, Integer> primeNodes;
+    private static List<Integer> primeSieve;
     private static List<Dinic.Edge>[] graph;
 
     public static void main(String args[]) throws IOException {
@@ -46,6 +49,9 @@ public class ComputerGame {
             n2[i] = Integer.parseInt(s[i]);
         timer.lap("reading input");
 
+        primeSieve = primeSieve(1000000000);
+        timer.lap("sieving primes");
+
         source = 0;
         dest = 1;
         primeNodes = new HashMap<>();
@@ -53,7 +59,7 @@ public class ComputerGame {
         for (int i = 0; i < n; i++) {
             vn = i + 2;
             Dinic.addEdge(graph, source, vn, 1);
-            for (Integer p : primeFactors(n1[i])) {
+            for (Integer p : primeFactors(n1[i], primeSieve)) {
                 pi = primeNodes.get(p);
                 if (pi == null) {
                     pi = n * 2 + primeNodes.size() + 1;
@@ -65,7 +71,7 @@ public class ComputerGame {
         for (int i = 0; i < n; i++) {
             vn = n + i + 2;
             Dinic.addEdge(graph, vn, dest, 1);
-            for (Integer p : primeFactors(n2[i])) {
+            for (Integer p : primeFactors(n2[i], primeSieve)) {
                 pi = primeNodes.get(p);
                 if (pi != null)
                     Dinic.addEdge(graph, pi, vn, 1);
@@ -80,27 +86,39 @@ public class ComputerGame {
         logger.log(Level.INFO, timer.toString());
     }
 
-    // TODO OPTIMIZE THIS - CACHE RESULTS?
-    private static Set<Integer> primeFactors(int n) {
-        final Set<Integer> primes = new HashSet<>();
-        // While 2 divides n, add 2 and divide n
-            while (n % 2 == 0) {
-                primes.add(2);
-                n /= 2;
+    private static List<Integer> primeSieve(int max) {
+        List<Integer> sieve = new ArrayList<>();
+        int[] divisor = new int[(int) Math.sqrt(max) - 2];
+        boolean[] prime = new boolean[(int) Math.sqrt(max) + 3];
+        Arrays.fill(prime, true);
+        for (int i = 2; i < prime.length; i++) {
+            if (!prime[i])
+                continue;
+            divisor[i] = i;
+            int j = i * i;
+            while (j < prime.length) {
+                prime[j] = false;
+                if (j < divisor.length)
+                    divisor[j] = i;
+                j += i;
             }
-        // n must be odd at this point.  So we can
-        // skip one element (Note i = i +2)
-        for (int i = 3; i <= Math.sqrt(n); i += 2)
-            // While i divides n, save i and divide n
-            while (n % i == 0) {
-                primes.add(i);
-                    n /= i;
-            }
+            sieve.add(i);
+        }
+        return sieve;
+    }
 
-        // This condition is to handle the case when
-        // n is a prime number greater than 2
-            if (n > 2)
-                primes.add(n);
+    private static Set<Integer> primeFactors(int n, List<Integer> primeSieve) {
+        Integer p = primeSieve.get(0);
+        final Set<Integer> primes = new HashSet<>();
+        for (int i = 0; i < primeSieve.size() && p <= Math.sqrt(n); i++) {
+            while (n % p == 0) {
+                primes.add(p);
+                n /= p;
+            }
+            p = primeSieve.get(i);
+        }
+        if (n > 2)
+            primes.add(n);
         return primes;
     }
 
