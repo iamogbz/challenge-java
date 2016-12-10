@@ -22,13 +22,13 @@ public class ComputerGame {
     private static BufferedReader in;
     private static Integer n, pi, vn, source, dest, result;
     private static Map<Integer, Integer> primeNodes;
-    private static List<Integer> primeSieve;
+    private static Integer[] primeSieve;
     private static List<Dinic.Edge>[] graph;
 
     public static void main(String args[]) throws IOException {
         try {
             // sample result - 1867
-            FileInputStream is = new FileInputStream(new File("inputs/computer-game-09.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/computer-game-10.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -86,7 +86,7 @@ public class ComputerGame {
         logger.log(Level.INFO, timer.toString());
     }
 
-    private static List<Integer> primeSieve(int max) {
+    private static Integer[] primeSieve(int max) {
         List<Integer> sieve = new ArrayList<>();
         int[] divisor = new int[(int) Math.sqrt(max) - 2];
         boolean[] prime = new boolean[(int) Math.sqrt(max) + 3];
@@ -104,18 +104,17 @@ public class ComputerGame {
             }
             sieve.add(i);
         }
-        return sieve;
+        return sieve.toArray(new Integer[0]);
     }
 
-    private static Set<Integer> primeFactors(int n, List<Integer> primeSieve) {
-        Integer p = primeSieve.get(0);
+    private static Set<Integer> primeFactors(int n, Integer[] sieve) {
         final Set<Integer> primes = new HashSet<>();
-        for (int i = 0; i < primeSieve.size() && p <= Math.sqrt(n); i++) {
+        for (Integer p : sieve) {
+            if(p > Math.sqrt(n) + 1) break;
             while (n % p == 0) {
                 primes.add(p);
                 n /= p;
             }
-            p = primeSieve.get(i);
         }
         if (n > 2)
             primes.add(n);
