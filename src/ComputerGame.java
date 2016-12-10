@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,8 +21,8 @@ public class ComputerGame {
     private static BufferedReader in;
     private static Integer n, num, pi, vn, source, dest, result;
     private static String[] n1, n2;
-    private static List<Integer> nodes1, nodes2;
     private static Map<Integer, Integer> primeNodes;
+    private static List<Dinic.Edge>[] graph;
 
     public static void main(String args[]) throws IOException {
         try {
@@ -44,48 +44,31 @@ public class ComputerGame {
         source = 0;
         dest = 1;
         primeNodes = new HashMap<>();
-        nodes1 = new ArrayList<>();
-        nodes2 = new ArrayList<>();
+        graph = Dinic.createGraph(400000); // assume upper limit of nodes
         for (int i = 0; i < n; i++) {
             vn = i + 2;
-            nodes1.add(source);
-            nodes2.add(vn);
+            Dinic.addEdge(graph, source, vn, 1);
             num = Integer.parseInt(n1[i]);
-            primeFactors(num).stream().map((p) -> {
+            for (Integer p : primeFactors(num)) {
                 pi = primeNodes.get(p);
                 if (pi == null) {
                     pi = n * 2 + primeNodes.size() + 1;
                     primeNodes.put(p, pi);
                 }
-                return p;
-            }).map((_item) -> {
-                nodes1.add(vn);
-                return _item;
-            }).forEach((_item) -> {
-                nodes2.add(pi);
-            });
+                Dinic.addEdge(graph, vn, pi, 1);
+            }
         }
         for (int i = 0; i < n; i++) {
             vn = n + i + 2;
-            nodes1.add(vn);
-            nodes2.add(dest);
+            Dinic.addEdge(graph, vn, dest, 1);
             num = Integer.parseInt(n2[i]);
-            primeFactors(num).stream().map((p) -> {
+            for (Integer p : primeFactors(num)) {
                 pi = primeNodes.get(p);
-                return p;
-            }).filter((_item) -> (pi != null)).map((_item) -> {
-                nodes1.add(pi);
-                return _item;
-            }).forEach((_item) -> {
-                nodes2.add(vn);
-            });
+                if (pi != null)
+                    Dinic.addEdge(graph, pi, vn, 1);
+            }
         }
-        timer.lap("factoring adjacency map");
-
-        List<Dinic.Edge>[] graph = Dinic.createGraph(n * 2 + primeNodes.size() + 2);
-        for (int i = 0; i < nodes1.size(); i++)
-            Dinic.addEdge(graph, nodes1.get(i), nodes2.get(i), 1);
-        timer.lap("building graph");
+        timer.lap("factoring graph");
 
         result = Dinic.maxFlow(graph, source, dest);
         timer.stop("solving max flow");
