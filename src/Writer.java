@@ -10,7 +10,7 @@ public class Writer {
      * call this method to initialise printer for OutputStream
      */
     static void init(OutputStream output) {
-        printer = new PrintWriter(output, true);
+        printer = new PrintWriter(output);
     }
 
     static void print(String s) {
