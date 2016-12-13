@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -79,7 +78,7 @@ public class RepetitiveKSum {
     }
 
     private static void removeKSums(int start, int end, long sum) {
-        Writer.println(start + " " + end + " " + sum);
+        //Writer.println(start + " " + end + " " + sum);
         if (start == k) {
             remove(sum);
             return;
