@@ -57,7 +57,7 @@ public class DebugTimer {
     }
 
     public void stop(String name) {
-        stopTime = lap(name);
+        stopTime = name == null ? System.currentTimeMillis() : lap(name);
         running = false;
     }
 
