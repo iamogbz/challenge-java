@@ -13,8 +13,7 @@ class Reader {
 
     /** call this method to initialise buffer for InputStream */
     static void init(InputStream input) {
-        buffer = new BufferedReader(
-                     new InputStreamReader(input) );
+        buffer = new BufferedReader(new InputStreamReader(input));
         tokenizer = new StringTokenizer("");
     }
     

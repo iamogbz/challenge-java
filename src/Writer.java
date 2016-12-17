@@ -2,7 +2,7 @@
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-public class Writer {
+class Writer {
 
     static PrintWriter printer;
 
