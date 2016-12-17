@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class GraphComponents {
 
     public static void main(String[] args) throws IOException {
         try {
-            FileInputStream is = new FileInputStream(new File("inputs/graph-component-test.txt"));
+            FileInputStream is = new FileInputStream(new File("inputs/graph-component-35.txt"));
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -40,7 +41,7 @@ public class GraphComponents {
         int max = 0, min = Integer.MAX_VALUE;
         for (Integer k : graph.keySet())
             if (!seen.contains(k)) {
-                comps = DFS(k, new HashSet<>());
+                comps = DFS(k);
                 max = comps.size() > max ? comps.size() : max;
                 min = comps.size() < min ? comps.size() : min;
                 seen.addAll(comps);
@@ -65,12 +66,17 @@ public class GraphComponents {
         e2.add(n1);
     }
 
-    private static HashSet<Integer> DFS(int root, HashSet<Integer> seen) {
-        Set<Integer> next = new HashSet<>();
-        next.addAll(graph.get(root));
-        next.removeAll(seen);
-        seen.add(root);
-        for (Integer n : next) seen.addAll(DFS(n, seen));
+    private static HashSet<Integer> DFS(int root) {
+        HashSet<Integer> seen = new HashSet<>();
+        ArrayDeque<Integer> stack = new ArrayDeque<>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            int n = stack.pop();
+            if (!seen.contains(n)) {
+                seen.add(n);
+                for (Integer v : graph.get(n)) stack.push(v);
+            }
+        }
         return seen;
     }
 
