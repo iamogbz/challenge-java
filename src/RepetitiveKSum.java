@@ -1,4 +1,6 @@
 
+// https://www.hackerrank.com/challenges/repeat-k-sums
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,13 +35,14 @@ public class RepetitiveKSum {
         while (t-- > 0) {
             n = Reader.nextInt();
             k = Reader.nextInt();
-            //Writer.println(n + " " + k);
+            // Writer.println(n + " " + k);
             s = new TreeMap<>();
             f = new ArrayList<>();
-            do put(Reader.nextLong());
+            do
+                put(Reader.nextLong());
             while (Reader.hasNext());
             timer.lap("reading input");
-            //Writer.println(s.toString());
+            // Writer.println(s.toString());
             long a = pollFirst() / k, b;
             f.add(a);
             for (int j = 1; j < n; j++) {
@@ -48,7 +51,6 @@ public class RepetitiveKSum {
                 removeKSums(1, j, b);
             }
             timer.lap("extracting sequence");
-            //Writer.println(f.stream().map(Object::toString).collect(Collectors.joining(" ")));
             Writer.println(toString(f));
             timer.lap("printing sequence");
         }
@@ -73,12 +75,14 @@ public class RepetitiveKSum {
 
     private static void remove(long x) {
         int c = s.get(x);
-        if (c == 1) s.remove(x);
-        else s.put(x, c - 1);
+        if (c == 1)
+            s.remove(x);
+        else
+            s.put(x, c - 1);
     }
 
     private static void removeKSums(int start, int end, long sum) {
-        //Writer.println(start + " " + end + " " + sum);
+        // Writer.println(start + " " + end + " " + sum);
         if (start == k) {
             remove(sum);
             return;

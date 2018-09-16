@@ -1,4 +1,6 @@
 
+// https://www.hackerrank.com/challenges/computer-game
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -110,7 +112,8 @@ public class ComputerGame {
     private static Set<Integer> primeFactors(int n, Integer[] sieve) {
         final Set<Integer> primes = new HashSet<>();
         for (Integer p : sieve) {
-            if(p > Math.sqrt(n) + 1) break;
+            if (p > Math.sqrt(n) + 1)
+                break;
             while (n % p == 0) {
                 primes.add(p);
                 n /= p;

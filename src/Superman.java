@@ -1,3 +1,4 @@
+// https://www.hackerrank.com/challenges/superman-celebrates-diwali
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,12 +10,7 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Emmanuel
- */
 public class Superman {
-
     private static int[][] grid;
     private static LinkedList<Integer[]> scoreMem;
     private static int bestJumpScore, bestJumpScoreBuilding, nextBestJumpScore;

@@ -1,6 +1,6 @@
 
 /**
- ** Java Program to Implement Hopcroft Kraft Algorithm
+ * Java Program to Implement Hopcroft Kraft Algorithm
  *
  */
 import java.util.*;

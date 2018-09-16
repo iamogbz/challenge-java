@@ -1,4 +1,6 @@
 
+// https://www.hackerrank.com/challenges/components-in-graph
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,7 +22,8 @@ public class GraphComponents {
 
     public static void main(String[] args) throws IOException {
         try {
-            FileInputStream is = new FileInputStream(new File("inputs/graph-component-35.txt"));
+            File input = new File("inputs/graph-component-35.txt");
+            FileInputStream is = new FileInputStream(input);
             System.setIn(is);
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -36,7 +39,7 @@ public class GraphComponents {
             addEdge(a, b);
         }
         timer.lap("Reading input and populating graph");
-        //TreeSet<Integer> comps = getComponents();
+        // TreeSet<Integer> comps = getComponents();
         Set<Integer> comps, seen = new HashSet<>();
         int max = 0, min = Integer.MAX_VALUE;
         for (Integer k : graph.keySet())
@@ -74,7 +77,8 @@ public class GraphComponents {
             int n = stack.pop();
             if (!seen.contains(n)) {
                 seen.add(n);
-                for (Integer v : graph.get(n)) stack.push(v);
+                for (Integer v : graph.get(n))
+                    stack.push(v);
             }
         }
         return seen;

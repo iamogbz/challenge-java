@@ -1,6 +1,6 @@
 
 /**
- ** Java Program to Implement Dinic's Algorithm
+ * Java Program to Implement Dinic's Algorithm
  *
  */
 import java.util.*;
